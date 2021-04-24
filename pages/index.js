@@ -1,25 +1,46 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
+import { useEffect, useState } from "react";
 
-export default function Home() {
-  var month = new Array();
-  month[0] = "January";
-  month[1] = "February";
-  month[2] = "March";
-  month[3] = "April";
-  month[4] = "May";
-  month[5] = "June";
-  month[6] = "July";
-  month[7] = "August";
-  month[8] = "September";
-  month[9] = "October";
-  month[10] = "November";
-  month[11] = "December";
-  const today = new Date();
-  const day = today.getDate();
-  const monthIndex = today.getMonth();
-  const year = today.getFullYear();
-  const dateInWords = `${day} ${month[monthIndex]}, ${year}`;
+export default function Home({ photos }) {
+  const mostRecentPhoto = photos[photos.length - 1];
+  const [currentPhoto, setCurrentPhoto] = useState({
+    index: photos.length - 1,
+    date: mostRecentPhoto.fields["Date"],
+    imageUrl: mostRecentPhoto.fields["Photo"][0]["url"],
+  });
+
+  const goToPreviousPhoto = () => {
+    var previousIndex = currentPhoto.index - 1;
+    var previousPhoto = photos[previousIndex];
+
+    setCurrentPhoto({
+      index: previousIndex,
+      date: previousPhoto.fields["Date"],
+      imageUrl: previousPhoto.fields["Photo"][0]["url"],
+    });
+  };
+
+  const goToNextPhoto = () => {
+    var nextIndex = currentPhoto.index + 1;
+    var nextPhoto = photos[nextIndex];
+    setCurrentPhoto({
+      index: nextIndex,
+      date: nextPhoto.fields["Date"],
+      imageUrl: nextPhoto.fields["Photo"][0]["url"],
+    });
+  };
+
+  const hasPrevious = () => {
+    var previousIndex = currentPhoto.index - 1;
+    if (photos[previousIndex]) return true;
+    return false;
+  };
+  const hasNext = () => {
+    var nextIndex = currentPhoto.index + 1;
+    if (photos[nextIndex]) return true;
+    return false;
+  };
 
   return (
     <div className={styles.container}>
@@ -30,42 +51,17 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>This is shai today.</h1>
-        <h2>{dateInWords} </h2>
-        <img src="/images/24-04-2021.jpeg"></img>
-        {/* <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+        <h2>{currentPhoto.date} </h2>
+        <img src={currentPhoto.imageUrl}></img>
+        <div className="navigation">
+          <button onClick={goToPreviousPhoto} disabled={!hasPrevious()}>
+            <h3> &larr; previous day</h3>
+          </button>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div> */}
+          <button onClick={goToNextPhoto} disabled={!hasNext()}>
+            <h3>next day &rarr;</h3>
+          </button>
+        </div>
       </main>
 
       <footer className={styles.footer}>
@@ -76,7 +72,48 @@ export default function Home() {
           margin-top: 20px;
           height: 400px;
         }
+
+        button {
+          background-color: transparent;
+          border: none;
+          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+            sans-serif;
+        }
+        button:hover {
+          cursor: pointer;
+          color: #0070f3;
+        }
+
+        button:focus {
+          outline: none;
+        }
+
+        .navigation {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+        }
       `}</style>
     </div>
   );
+}
+
+export async function getServerSideProps() {
+  // Call an external API endpoint to get posts.
+  // You can use any data fetching library
+
+  var data = await fetch(
+    "https://api.airtable.com/v0/appOhLn2wS6Xj9XNQ/Table%201?api_key=keyBt1VN9a5j0bhs1"
+  );
+
+  var data = await data.json();
+  var photos = data.records;
+  // By returning { props: { posts } }, the Blog component
+  // will receive `posts` as a prop at build time
+  return {
+    props: {
+      photos,
+    },
+  };
 }
