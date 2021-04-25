@@ -46,7 +46,7 @@ export default function Home({ photos }) {
     <div className={styles.container}>
       <Head>
         <title>shai today</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href={currentPhoto.imageUrl} />
       </Head>
 
       <main className={styles.main}>
