@@ -82,7 +82,6 @@ export default function Home({ photos }) {
         }
         button:hover {
           cursor: pointer;
-          color: #0070f3;
         }
 
         button:focus {
